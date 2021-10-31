@@ -5,7 +5,9 @@ import DownloadBtn from "./DownloadBtn";
 interface IState {
     privateKey?: any,
     account?: any,
-    accountStr?: any
+    accountStr?: any,
+    passwordInput?: string,
+    errors?: string
 }
 
 class WalletCreator extends React.Component<any, IState> {
@@ -15,22 +17,45 @@ class WalletCreator extends React.Component<any, IState> {
         const walletService = new WalletService()
 
         const createWallet = () => {
-            this.account = walletService.crateAccount("testttttt")
+            const password = this.state?.passwordInput
+            if (!password) {
+                this.setState({
+                    errors: "Password is required!"
+                })
+                return
+            }
+            this.setState({
+                errors: ""
+            })
+            this.account = walletService.crateAccount(password)
             this.setState({
                 privateKey: this.account?.newWallet.privateKey
             })
         }
 
+        const handleChange = (e: any) => {
+            this.setState({passwordInput: e.target.value}, () => {
+            });
+        }
+
         return (
             <div className="WalletCreator">
-                my wallet
+                <p>{this.state?.errors}</p>
+                password:
+                <input onChange={(e) => {
+                    handleChange(e)
+                }}/>
                 <button onClick={createWallet}>create wallet</button>
-                <p> Account information:</p>
-                <p>address: {this.account?.newWallet?.address}</p>
                 {this.account ? (
-                    <DownloadBtn fileName={"privateKey.txt"} fileContent={this.state.privateKey}
-                                 buttonName={"download private key"}/>
-                ) : ("")};
+                    <div>
+                        <p> Account information:</p>
+                        <p>address: {this.account?.newWallet?.address}</p>
+
+                        <DownloadBtn fileName={"privateKey.txt"} fileContent={this.state.privateKey}
+                                     buttonName={"download private key"}/>
+                    </div>
+                ) : ("")}
+
             </div>
         );
     }
